@@ -1,0 +1,34 @@
+# guideline 1 - understanding the importance of software design
+
+Fix A -> involves B -> breaks C and D
+
+> dependency is the key problem in software development at all scales
+
+> reduce artificial dependencies through necessary abstractions and compromises
+
+# guideline 2 - design for change
+
+- separation of concerns
+- module cohesion: force-separating the module would cause tight(artificial)
+  coupling
+
+> everything should just do one thing (like Unix-philosophy, linux wins again)
+
+## example from the book
+
+- in the example: method for serialization doesn't belong in a `Document` class
+  (e.g. let a dedicated serializer with abilities like handling endianness/file
+  format etc. do the job -> necessary abstraction)
+- don't introduce pure virtual functions w/ added dependencies which aren't
+  strictly needed by the sub-class -> artificial dependency
+
+> classes with (external) artificial dependencies / strong couplings are hard to
+> change, because a change would cause a chain of necessary modifications
+> down-streamed to all the sub-classes
+
+> artificial dependencies can even be transitive and carry over to the
+> higher-level modules
+
+## DRY - don't repeat yourself
+
+
