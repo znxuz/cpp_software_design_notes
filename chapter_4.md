@@ -116,4 +116,93 @@ for (const auto& shape : shapes) {
 
 # guideline 17 - consider `std::variant` for implementing visitor
 
+```cpp
+struct Print {
+  void operator()(int value) const { std::println("int"); }
+  void operator()(double value) const { std::println("double"); }
+  void operator()(const std::string& value) const { std::println("string"); }
+};
 
+int main() {
+  std::variant<int, double, std::string> v{};
+
+  v = 42;
+  v = 3.14;
+  v = 2.71f;
+  v = "hello";
+  v = 43;
+  // const int i = std::get<int>(v);
+  // const int* p_i = std::get_if<int>(&v);
+
+  std::visit(Print{}, v);
+}
+```
+
+- `std::visit`: pass a custom **visitor** to perform any operation on the value
+  of a *closed set* of types
+- loose coupling: no `Visitor` base class, derived classes -> non intrusive
+
+## refactored example
+
+```cpp
+class Circle {
+public:
+  explicit Circle(double radius) : radius_{radius} {}
+  // ...
+};
+
+class Square {
+public:
+  explicit Square(double side) : side_{side} {}
+  // ...
+};
+
+using Shape = std::variant<Circle, Square>;
+using Shapes = std::vector<Shape>;
+```
+
+> just as POD classes
+
+```cpp
+struct Draw {
+  void operator()(const Circle& c) const { /* ... */ }
+  void operator()(const Square& c) const { /* ... */ }
+};
+
+void draw_all_shapes(const Shapes& shapes) {
+  for (const auto& shape : shapes)
+    std::visit(Draw{}, shape);
+}
+
+using RoundShapes = std::variant<Circle, Ellipse>;
+using AngularShapes = std::variant<Square, Rectangle>;
+```
+
+- significantly simpler from the architectural POV
+
+## benchmark
+
+- 25k op on 10k randomly created shapes
+
+| visitor impl.            | gcc 11.1 | clang 11.1 |
+|--------------------------|----------|------------|
+| classic visitor          | 1.61     | 1.80       |
+| OOP                      | 1.52     | 1.14       |
+| enum                     | 1.21     | 1.12       |
+| std::variant             | 1.19     | 1.23       |
+| std::variant w. get_if<> | 1.02     | 0.69       |
+
+## shortcomings
+
+- still for *open set* of operations on a *closed set* of types
+- `std::variant` is the size of the biggest type: potential waste buffer space
+- better performance for worse encapsulation
+
+---
+
+# guideline 18 - beware the performance of acyclic visitor pattern
+
+> worst performance for supporting an open set of operations with an open set of
+> types
+
+skipped
